@@ -6,7 +6,8 @@ import CustomerPanel from './components/CustomerPanel';
 import MerchantPanel from './components/MerchantPanel';
 import AdminPanel from './components/AdminPanel';
 import PDFReport from './components/PDFReport';
-import { Code, ArrowLeft, Copy, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Code, ArrowLeft, Copy, CheckCircle2, AlertCircle, Cloud } from 'lucide-react';
+import { firebaseService } from './lib/firebaseService';
 
 export default function App() {
   // Application Roles and States
@@ -29,48 +30,133 @@ export default function App() {
   const [showFlutterDrawer, setShowFlutterDrawer] = useState(false);
   const [copied, setCopied] = useState(false);
 
+  const [firebaseStatus, setFirebaseStatus] = useState<'idle' | 'syncing' | 'synced' | 'error'>('idle');
+
   // Load database on mount
   useEffect(() => {
     // Check and trigger auto-expiration of subscriptions
     db.checkSubscriptions();
 
+    // Load local storage fallback data first
     setMarkets(db.getMarkets());
     setCategories(db.getCategories());
     setSubcategories(db.getSubcategories());
     setMerchants(db.getMerchants());
     setCustomers(db.getCustomers());
     setProducts(db.getProducts());
+
+    // Connect and sync with Firestore database
+    const syncWithFirebase = async () => {
+      setFirebaseStatus('syncing');
+      try {
+        const initialSeeds = {
+          markets: db.getMarkets(),
+          categories: db.getCategories(),
+          subcategories: db.getSubcategories(),
+          merchants: db.getMerchants(),
+          customers: db.getCustomers(),
+          products: db.getProducts()
+        };
+
+        const fbData = await firebaseService.loadAllData(initialSeeds);
+
+        // Update states
+        setMarkets(fbData.markets);
+        setCategories(fbData.categories);
+        setSubcategories(fbData.subcategories);
+        setMerchants(fbData.merchants);
+        setCustomers(fbData.customers);
+        setProducts(fbData.products);
+
+        // Save back to local storage cache
+        db.saveMarkets(fbData.markets);
+        db.saveCategories(fbData.categories);
+        db.saveSubcategories(fbData.subcategories);
+        db.saveMerchants(fbData.merchants);
+        db.saveCustomers(fbData.customers);
+        db.saveProducts(fbData.products);
+
+        setFirebaseStatus('synced');
+      } catch (err) {
+        console.error("Firebase synchronization failed:", err);
+        setFirebaseStatus('error');
+      }
+    };
+
+    syncWithFirebase();
   }, []);
 
   // Sync to database and state
-  const syncMarkets = (data: Market[]) => {
+  const syncMarkets = async (data: Market[]) => {
     setMarkets(data);
     db.saveMarkets(data);
+    setFirebaseStatus('syncing');
+    try {
+      await firebaseService.syncMarkets(data);
+      setFirebaseStatus('synced');
+    } catch {
+      setFirebaseStatus('error');
+    }
   };
 
-  const syncCategories = (data: Category[]) => {
+  const syncCategories = async (data: Category[]) => {
     setCategories(data);
     db.saveCategories(data);
+    setFirebaseStatus('syncing');
+    try {
+      await firebaseService.syncCategories(data);
+      setFirebaseStatus('synced');
+    } catch {
+      setFirebaseStatus('error');
+    }
   };
 
-  const syncSubcategories = (data: Subcategory[]) => {
+  const syncSubcategories = async (data: Subcategory[]) => {
     setSubcategories(data);
     db.saveSubcategories(data);
+    setFirebaseStatus('syncing');
+    try {
+      await firebaseService.syncSubcategories(data);
+      setFirebaseStatus('synced');
+    } catch {
+      setFirebaseStatus('error');
+    }
   };
 
-  const syncMerchants = (data: Merchant[]) => {
+  const syncMerchants = async (data: Merchant[]) => {
     setMerchants(data);
     db.saveMerchants(data);
+    setFirebaseStatus('syncing');
+    try {
+      await firebaseService.syncMerchants(data);
+      setFirebaseStatus('synced');
+    } catch {
+      setFirebaseStatus('error');
+    }
   };
 
-  const syncCustomers = (data: Customer[]) => {
+  const syncCustomers = async (data: Customer[]) => {
     setCustomers(data);
     db.saveCustomers(data);
+    setFirebaseStatus('syncing');
+    try {
+      await firebaseService.syncCustomers(data);
+      setFirebaseStatus('synced');
+    } catch {
+      setFirebaseStatus('error');
+    }
   };
 
-  const syncProducts = (data: Product[]) => {
+  const syncProducts = async (data: Product[]) => {
     setProducts(data);
     db.saveProducts(data);
+    setFirebaseStatus('syncing');
+    try {
+      await firebaseService.syncProducts(data);
+      setFirebaseStatus('synced');
+    } catch {
+      setFirebaseStatus('error');
+    }
   };
 
   // Auth Operations
@@ -565,6 +651,26 @@ class PdfInvoiceApi {
           </div>
         </div>
       )}
+
+      {/* Firebase Sync Status Floating Badge */}
+      <div className="fixed bottom-4 left-4 z-50 flex items-center gap-2 bg-slate-900/95 backdrop-blur-md border border-white/10 px-3 py-2 rounded-xl text-xxs shadow-2xl transition-all duration-300">
+        <div className="relative flex h-2 w-2">
+          {firebaseStatus === 'syncing' && (
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
+          )}
+          <span className={`relative inline-flex rounded-full h-2 w-2 ${
+            firebaseStatus === 'synced' ? 'bg-emerald-500' :
+            firebaseStatus === 'syncing' ? 'bg-orange-500' :
+            firebaseStatus === 'error' ? 'bg-rose-500' : 'bg-slate-500'
+          }`}></span>
+        </div>
+        <span className="font-bold text-slate-300">
+          {firebaseStatus === 'synced' && 'متصل بقاعدة Firebase'}
+          {firebaseStatus === 'syncing' && 'جاري مزامنة البيانات...'}
+          {firebaseStatus === 'error' && 'خطأ في الاتصال بالسحابة'}
+          {firebaseStatus === 'idle' && 'غير متصل'}
+        </span>
+      </div>
 
     </div>
   );

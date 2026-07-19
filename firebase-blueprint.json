@@ -1,0 +1,66 @@
+{
+  "databaseId": "ai-studio-5ae08d7a-c87d-4f14-9e03-225903070a3f",
+  "collections": {
+    "markets": {
+      "fields": {
+        "id": "string",
+        "name": "string",
+        "description": "string",
+        "icon": "string"
+      }
+    },
+    "categories": {
+      "fields": {
+        "id": "string",
+        "marketId": "string",
+        "name": "string"
+      }
+    },
+    "subcategories": {
+      "fields": {
+        "id": "string",
+        "categoryId": "string",
+        "name": "string"
+      }
+    },
+    "merchants": {
+      "fields": {
+        "id": "string",
+        "fullName": "string",
+        "storeName": "string",
+        "phone": "string",
+        "password": "string",
+        "status": "string",
+        "subscriptionStatus": "string",
+        "subscriptionExpiry": "string",
+        "documents": "array",
+        "createdAt": "string"
+      }
+    },
+    "customers": {
+      "fields": {
+        "id": "string",
+        "fullName": "string",
+        "phone": "string",
+        "password": "string",
+        "createdAt": "string"
+      }
+    },
+    "products": {
+      "fields": {
+        "id": "string",
+        "merchantId": "string",
+        "marketId": "string",
+        "categoryId": "string",
+        "subcategoryId": "string",
+        "name": "string",
+        "type": "string",
+        "description": "string",
+        "price": "number",
+        "sizes": "array",
+        "discount": "map",
+        "imageUrl": "string"
+      }
+    }
+  }
+}
