@@ -29,7 +29,7 @@ jobs:
         run: bun install
 
       - name: Build Web Project
-        run: bun run build --if-present
+        run: bun run build
 
       - name: Add Android Platform & Sync
         run: |
