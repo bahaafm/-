@@ -1,0 +1,6 @@
+{
+  "name": "سوق جبلة",
+  "description": "منصة سوق جبلة الإلكترونية - نظام متكامل للزبائن، التجار، ولوحة الإدارة مع إدارة الاشتراكات والمنتجات والتقارير.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
