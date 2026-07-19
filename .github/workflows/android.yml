@@ -31,10 +31,13 @@ jobs:
       - name: Build Web Project
         run: bun run build
 
+      - name: Install Capacitor CLI & Core
+        run: bun add -d @capacitor/core @capacitor/cli @capacitor/android
+
       - name: Add Android Platform & Sync
         run: |
-          bunx cap add android || true
-          bunx cap sync android
+          bun bunx cap add android || true
+          bun bunx cap sync android
 
       - name: Build Debug APK via Gradle
         run: |
